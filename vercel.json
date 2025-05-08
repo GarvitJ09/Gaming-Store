@@ -1,16 +1,4 @@
 {
-  "projects": {
-    "frontend": {
-      "src": "frontend",
-      "buildCommand": "npm run build",
-      "outputDirectory": "frontend/build"
-    },
-    "backend": {
-      "src": "backend",
-      "buildCommand": "npm install",
-      "outputDirectory": "backend"
-    }
-  },
   "rewrites": [
     {
       "source": "/api/(.*)",

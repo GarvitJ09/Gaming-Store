@@ -10,47 +10,37 @@ const { isAdmin } = require('../middlewares/authMiddleware');
  */
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, phone, password, role, address } = req.body;
+    const { firebaseUid, name, email, phone, password, role, address } = req.body;
 
     if (!name || !email || !phone || !password) {
       return res.status(400).json({ message: 'All fields are required.' });
     }
+ 
 
     // Check if user already exists in DB
     let user = await User.findOne({ email });
     if (user) {
       return res.status(409).json({ message: 'User already exists' });
-    }
-
-    // Create user in Firebase
-    const userRecord = await admin.auth().createUser({
-      email,
-      password,
-      displayName: name,
-    });
+    }  
 
     // Create new user in MongoDB
     user = new User({
-      firebaseUid: userRecord.uid,
+      firebaseUid,
       name,
       email,
       phone,
       role: role || 'user', // Default to 'user' if no role specified
       address,
     });
-
+    console.log("user saving in mongodb",user);
     await user.save();
-
-    // Create custom token for immediate login
-    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+    console.log("user created in mongodb",user); 
 
     res.status(201).json({ 
       message: 'User created successfully',
       user: {
-        ...user.toObject(),
-        password: undefined
-      },
-      customToken 
+        ...user.toObject()
+      } 
     });
   } catch (error) {
     console.error('Signup error:', error);

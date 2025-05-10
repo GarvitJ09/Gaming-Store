@@ -7,10 +7,12 @@ import OrdersManagement from './pages/OrdersManagement';
 import RidersManagement from './pages/RidersManagement';
 import AdminLogin from './pages/AdminLogin';
 import CreateAdmin from './CreateAdmin';
+import AdminProductManagement from './pages/AdminProductManagement';
 
 export default function AdminApp() {
   const { currentUser, isAdmin } = useAuth();
-
+  console.log("currentUser",currentUser);
+  console.log("isAdmin",isAdmin);
   if (!currentUser) {
     return <AdminLogin />;
   }
@@ -28,6 +30,7 @@ export default function AdminApp() {
           <Route path='/orders' element={<OrdersManagement />} />
           <Route path='/riders' element={<RidersManagement />} />
           <Route path='/create-admin' element={<CreateAdmin />} />
+          <Route path='/products' element={<AdminProductManagement />} />
         </Routes>
       </div>
     </div>

@@ -16,11 +16,23 @@ dotenv.config();
 const app = express();
 
 // CORS configuration
+const allowedOrigins = {
+  development: 'http://localhost:3000',
+  staging: process.env.FRONTEND_URL, // or hardcode 'https://staging.yourapp.com'
+  production: process.env.FRONTEND_URL,
+};
+
 const corsOptions = {
-  origin:
-    process.env.NODE_ENV === 'production'
-      ? process.env.FRONTEND_URL
-      : 'http://localhost:3000',
+  origin: function (origin, callback) {
+    const currentEnv = process.env.APP_ENV || 'development';
+    const allowedOrigin = allowedOrigins[currentEnv];
+
+    if (!origin || origin === allowedOrigin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],

@@ -16,7 +16,7 @@ const AdminDashboard = () => {
     pendingOrders: 0,
     shippedOrders: 0,
     totalRiders: 0,
-    activeRiders: 0
+    activeRiders: 0,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,21 +30,23 @@ const AdminDashboard = () => {
       setLoading(true);
       const [ordersResponse, riders] = await Promise.all([
         orderService.getAllOrders(),
-        riderService.getAllRiders()
+        riderService.getAllRiders(),
       ]);
 
       const orders = ordersResponse.orders || [];
-      const pendingOrders = orders.filter(order => 
+      const pendingOrders = orders.filter((order) =>
         ['Pending', 'Paid', 'Processing'].includes(order.status)
       ).length;
-      const shippedOrders = orders.filter(order => order.status === 'Shipped').length;
+      const shippedOrders = orders.filter(
+        (order) => order.status === 'Shipped'
+      ).length;
 
       setStats({
         totalOrders: orders.length,
         pendingOrders,
         shippedOrders,
         totalRiders: riders.length,
-        activeRiders: riders.length // All riders are considered active since there's no status field
+        activeRiders: riders.length, // All riders are considered active since there's no status field
       });
       setError('');
     } catch (err) {
@@ -65,12 +67,12 @@ const AdminDashboard = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Admin Dashboard
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity='error' sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
@@ -78,34 +80,34 @@ const AdminDashboard = () => {
       <Grid container spacing={3}>
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" color="primary">
+            <Typography variant='h6' color='primary'>
               Total Orders
             </Typography>
-            <Typography variant="h4">{stats.totalOrders}</Typography>
+            <Typography variant='h4'>{stats.totalOrders}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" color="warning.main">
+            <Typography variant='h6' color='warning.main'>
               Pending Orders
             </Typography>
-            <Typography variant="h4">{stats.pendingOrders}</Typography>
+            <Typography variant='h4'>{stats.pendingOrders}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" color="info.main">
+            <Typography variant='h6' color='info.main'>
               Shipped Orders
             </Typography>
-            <Typography variant="h4">{stats.shippedOrders}</Typography>
+            <Typography variant='h4'>{stats.shippedOrders}</Typography>
           </Paper>
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <Paper sx={{ p: 2 }}>
-            <Typography variant="h6" color="success.main">
+            <Typography variant='h6' color='success.main'>
               Total Riders
             </Typography>
-            <Typography variant="h4">{stats.activeRiders}</Typography>
+            <Typography variant='h4'>{stats.activeRiders}</Typography>
           </Paper>
         </Grid>
       </Grid>
@@ -113,4 +115,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;

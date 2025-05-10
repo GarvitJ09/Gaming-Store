@@ -22,7 +22,6 @@ import {
   useTheme,
 } from '@mui/material';
 import {
-  Search as SearchIcon,
   Person as PersonIcon,
   Menu as MenuIcon,
   Home as HomeIcon,
@@ -46,10 +45,7 @@ export default function Navbar() {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [cartItemsCount, setCartItemsCount] = useState(0);
-  const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -68,13 +64,7 @@ export default function Navbar() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchQuery('');
-    }
-  };
+
 
   const menuItems = [
     { text: 'Home', icon: <HomeIcon />, path: '/' },
@@ -112,193 +102,106 @@ export default function Navbar() {
   );
 
   useEffect(() => {
-    const fetchProductsAndCart = async () => {
+    const fetchCartCount = async () => {
       try {
-        const [productsRes, cartRes] = await Promise.all([
-          fetch(`${API_URL}/products`),
-          fetch(`${API_URL}/cart/count`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
-            },
-          }),
-        ]);
-
-        if (productsRes.ok) {
-          const productData = await productsRes.json();
-          setProducts(productData);
-          setFilteredProducts(productData);
-        }
+        const cartRes = await fetch(`${API_URL}/cart/count`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        });
 
         if (cartRes.ok) {
           const cartData = await cartRes.json();
           setCartItemsCount(cartData.count || 0);
         }
       } catch (error) {
-        console.error('Error fetching products or cart:', error);
+        console.error('Error fetching cart count:', error);
       }
     };
 
-    fetchProductsAndCart();
+    fetchCartCount();
   }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      const lower = searchQuery.trim().toLowerCase();
-      setFilteredProducts(
-        products.filter(
-          (product) =>
-            (product.name && product.name.toLowerCase().includes(lower)) ||
-            (product.description &&
-              product.description.toLowerCase().includes(lower))
-        )
-      );
-    } else {
-      setFilteredProducts(products);
-    }
-  }, [searchQuery, products]);
+
 
   return (
     <AppBar position='sticky' color='default' elevation={1}>
-      <Toolbar>
-        {isMobile && (
-          <IconButton
-            edge='start'
-            color='inherit'
-            aria-label='menu'
-            onClick={() => setDrawerOpen(true)}
-            sx={{ mr: 2 }}
+     <Toolbar>
+  {isMobile && (
+    <IconButton
+      edge='start'
+      color='inherit'
+      aria-label='menu'
+      onClick={() => setDrawerOpen(true)}
+      sx={{ mr: 2 }}
+    >
+      <MenuIcon />
+    </IconButton>
+  )}
+
+  <Typography
+    variant='h6'
+    component='div'
+    sx={{ cursor: 'pointer', display: { xs: 'none', sm: 'block' } }}
+    onClick={() => navigate('/')}
+  >
+    Gaming Store
+  </Typography>
+
+  {/* RIGHT aligned icons */}
+  <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto' }}>
+    <IconButton color='inherit' onClick={() => navigate('/cart')}>
+      <Badge badgeContent={cartItemsCount} color='primary'>
+        <ShoppingCartIcon />
+      </Badge>
+    </IconButton>
+
+    {currentUser ? (
+      <>
+        <IconButton onClick={handleMenuOpen} sx={{ ml: 1 }}>
+          <Avatar
+            sx={{ width: 32, height: 32 }}
+            src={currentUser.photoURL}
           >
-            <MenuIcon />
-          </IconButton>
-        )}
-
-        <Typography
-          variant='h6'
-          component='div'
-          sx={{ cursor: 'pointer', display: { xs: 'none', sm: 'block' } }}
-          onClick={() => navigate('/')}
+            {currentUser.email?.[0]?.toUpperCase()}
+          </Avatar>
+        </IconButton>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
         >
-          Gaming Store
-        </Typography>
+          <MenuItem onClick={() => { navigate('/profile'); handleMenuClose(); }}>
+            <ListItemIcon>
+              <PersonIcon fontSize='small' />
+            </ListItemIcon>
+            Profile
+          </MenuItem>
+          <MenuItem onClick={() => { navigate('/orders'); handleMenuClose(); }}>
+            <ListItemIcon>
+              <ShippingIcon fontSize='small' />
+            </ListItemIcon>
+            Orders
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon fontSize='small' />
+            </ListItemIcon>
+            Logout
+          </MenuItem>
+        </Menu>
+      </>
+    ) : (
+      <Button color='inherit' onClick={() => navigate('/login')} sx={{ ml: 1 }}>
+        Login
+      </Button>
+    )}
+  </Box>
+</Toolbar>
 
-        <Box
-          component='form'
-          onSubmit={handleSearch}
-          sx={{
-            position: 'relative',
-            borderRadius: 1,
-            backgroundColor: 'rgba(0, 0, 0, 0.04)',
-            '&:hover': {
-              backgroundColor: 'rgba(0, 0, 0, 0.08)',
-            },
-            marginRight: 2,
-            marginLeft: 2,
-            width: { xs: '100%', sm: 'auto' },
-            flexGrow: 1,
-          }}
-        >
-          <Box
-            sx={{
-              position: 'absolute',
-              display: 'flex',
-              alignItems: 'center',
-              height: '100%',
-              pl: 2,
-            }}
-          >
-            <SearchIcon />
-          </Box>
-          <InputBase
-            placeholder='Search products...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            sx={{
-              color: 'inherit',
-              width: '100%',
-              pl: 6,
-              pr: 2,
-              py: 1,
-            }}
-          />
-        </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <IconButton color='inherit' onClick={() => navigate('/cart')}>
-            <Badge badgeContent={cartItemsCount} color='primary'>
-              <ShoppingCartIcon />
-            </Badge>
-          </IconButton>
 
-          {currentUser ? (
-            <>
-              <IconButton onClick={handleMenuOpen} sx={{ ml: 1 }}>
-                <Avatar
-                  sx={{ width: 32, height: 32 }}
-                  src={currentUser.photoURL}
-                >
-                  {currentUser.email?.[0]?.toUpperCase()}
-                </Avatar>
-              </IconButton>
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-              >
-                <MenuItem
-                  onClick={() => {
-                    navigate('/profile');
-                    handleMenuClose();
-                  }}
-                >
-                  <ListItemIcon>
-                    <PersonIcon fontSize='small' />
-                  </ListItemIcon>
-                  Profile
-                </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    navigate('/orders');
-                    handleMenuClose();
-                  }}
-                >
-                  <ListItemIcon>
-                    <ShippingIcon fontSize='small' />
-                  </ListItemIcon>
-                  Orders
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={handleLogout}>
-                  <ListItemIcon>
-                    <LogoutIcon fontSize='small' />
-                  </ListItemIcon>
-                  Logout
-                </MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <Button
-              color='inherit'
-              onClick={() => navigate('/login')}
-              sx={{ ml: 1 }}
-            >
-              Login
-            </Button>
-          )}
-        </Box>
-      </Toolbar>
-
-      {/* OPTIONAL: Render filtered results here if desired */}
-      {/* 
-      {searchQuery && (
-        <Box sx={{ backgroundColor: '#fff', px: 2, py: 1 }}>
-          {filteredProducts.map((product) => (
-            <Typography key={product.id} variant="body2">
-              {product.name}
-            </Typography>
-          ))}
-        </Box>
-      )}
-      */}
 
       <Drawer
         anchor='left'

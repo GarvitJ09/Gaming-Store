@@ -22,6 +22,10 @@ router.get('/:id', async (req, res) => {
 // POST /products - admin only
 router.post('/', verifyToken, requireRole('admin'), async (req, res) => {
   try {
+    console.log(
+      '📦 Product Create Payload:',
+      JSON.stringify(req.body, null, 2)
+    );
     const newProduct = await Product.create(req.body);
     res.status(201).json(newProduct);
   } catch (err) {
@@ -38,7 +42,7 @@ router.delete('/:id', verifyToken, requireRole('admin'), async (req, res) => {
 });
 
 // Endpoint to update stock
-router.put('/update-stock', verifyToken, async (req, res) => {
+router.patch('/update-stock', verifyToken, async (req, res) => {
   const { productId, variantId, additionalStock } = req.body;
 
   // Ensure productId and variantId are ObjectId types

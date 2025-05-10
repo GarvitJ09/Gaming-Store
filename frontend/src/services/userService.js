@@ -108,5 +108,27 @@ export const userService = {
       console.error('Error during logout:', error);
       throw error;
     }
+  },
+
+  registerUser: async (userData) => {
+    try {
+      const response = await api.post('/auth/signup', userData);
+      return response.data;
+    } catch (error) {
+      console.error('Error registering user:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  googleLogin: async (authData) => {
+    try {
+      const response = await api.post('/auth/google', authData);
+      return response.data;
+    } catch (error) {
+      console.error('Error google login/signup:', error.response?.data || error.message);
+      throw error;
+    }
   }
+
+  
 };

@@ -37,7 +37,7 @@ const ProductCard = ({ product, onViewDetails }) => {
           {product.description}
         </Typography>
         <Typography variant='subtitle1' fontWeight='bold' mt={1}>
-          ₹{product.price}
+        ${product.variants[0].price}
         </Typography>
 
         <Stack direction='row' spacing={1} mt={1} flexWrap='wrap'>

@@ -8,8 +8,8 @@ const api = axios.create({
   baseURL: API_URL,
   withCredentials: true,
   headers: {
-    'Content-Type': 'application/json'
-  }
+    'Content-Type': 'application/json',
+  },
 });
 
 // Helper function to refresh token
@@ -42,11 +42,11 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
-    
+
     // If error is 401 and we haven't tried to refresh token yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
-      
+
       try {
         const newToken = await refreshToken();
         if (newToken) {
@@ -57,7 +57,7 @@ api.interceptors.response.use(
         console.error('Token refresh failed:', refreshError);
       }
     }
-    
+
     return Promise.reject(error);
   }
 );
@@ -101,5 +101,29 @@ export const productService = {
       console.error('Error fetching featured products:', error);
       throw error;
     }
-  }
-}; 
+  },
+
+  addProduct: async (product) => {
+    try {
+      const response = await api.post('/products', product);
+      return response.data;
+    } catch (error) {
+      console.error('Error adding product:', error);
+      throw error;
+    }
+  },
+
+  updateVariantStock: async (productId, variantId, additionalStock) => {
+    try {
+      const response = await api.patch(`/products/update-stock`, {
+        productId,
+        variantId,
+        additionalStock,
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error updating variant stock:', error);
+      throw error;
+    }
+  },
+};

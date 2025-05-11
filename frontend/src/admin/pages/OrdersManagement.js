@@ -23,6 +23,7 @@ import {
   Chip,
   IconButton,
   Tooltip,
+  TextField,
 } from '@mui/material';
 import { orderService } from '../../services/orderService';
 import { riderService } from '../../services/riderService';
@@ -36,7 +37,7 @@ const statusColors = {
   Processing: 'primary',
   Shipped: 'secondary',
   Delivered: 'success',
-  Cancelled: 'error'
+  Cancelled: 'error',
 };
 
 const OrdersManagement = () => {
@@ -47,6 +48,12 @@ const OrdersManagement = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedRider, setSelectedRider] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    title: '',
+    price: 0,
+    variants: [],
+  });
+  const [variant, setVariant] = useState({ color: '', size: '', stock: 0 });
 
   useEffect(() => {
     fetchOrders();
@@ -105,13 +112,26 @@ const OrdersManagement = () => {
   };
 
   const getPendingOrdersCount = () => {
-    return orders.filter(order => 
+    return orders.filter((order) =>
       ['Pending', 'Paid', 'Processing'].includes(order.status)
     ).length;
   };
 
   const getTotalAmount = () => {
     return orders.reduce((total, order) => total + (order.totalPrice || 0), 0);
+  };
+
+  const handleAddProduct = () => {
+    // Call API to add product
+    console.log('Adding product:', newProduct);
+  };
+
+  const handleAddVariant = () => {
+    setNewProduct((prev) => ({
+      ...prev,
+      variants: [...prev.variants, variant],
+    }));
+    setVariant({ color: '', size: '', stock: 0 });
   };
 
   if (loading) {
@@ -124,25 +144,25 @@ const OrdersManagement = () => {
 
   return (
     <Box>
-      <Typography variant="h4" gutterBottom>
+      <Typography variant='h4' gutterBottom>
         Orders Management
       </Typography>
 
       <Box sx={{ display: 'flex', gap: 3, mb: 3 }}>
         <Paper sx={{ p: 2, flex: 1 }}>
-          <Typography variant="h6" color="primary">
+          <Typography variant='h6' color='primary'>
             Pending Orders: {getPendingOrdersCount()}
           </Typography>
         </Paper>
         <Paper sx={{ p: 2, flex: 1 }}>
-          <Typography variant="h6" color="primary">
+          <Typography variant='h6' color='primary'>
             Total Amount: ${getTotalAmount().toFixed(2)}
           </Typography>
         </Paper>
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity='error' sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
@@ -166,19 +186,21 @@ const OrdersManagement = () => {
                 <TableCell>{order.user?.email || 'N/A'}</TableCell>
                 <TableCell>${order.totalPrice?.toFixed(2) || '0.00'}</TableCell>
                 <TableCell>
-                  <Chip 
-                    label={order.status} 
+                  <Chip
+                    label={order.status}
                     color={statusColors[order.status] || 'default'}
-                    size="small"
+                    size='small'
                   />
                 </TableCell>
-                <TableCell>{order.assignedRider?.name || 'Not assigned'}</TableCell>
+                <TableCell>
+                  {order.assignedRider?.name || 'Not assigned'}
+                </TableCell>
                 <TableCell>
                   <Box sx={{ display: 'flex', gap: 1 }}>
                     {order.status === 'Pending' && (
-                      <Tooltip title="Mark as Paid">
+                      <Tooltip title='Mark as Paid'>
                         <IconButton
-                          color="primary"
+                          color='primary'
                           onClick={() => handleStatusChange(order._id, 'Paid')}
                         >
                           <CheckCircleIcon />
@@ -186,30 +208,38 @@ const OrdersManagement = () => {
                       </Tooltip>
                     )}
                     {order.status === 'Paid' && (
-                      <Tooltip title="Ship Order">
+                      <Tooltip title='Ship Order'>
                         <IconButton
-                          color="primary"
-                          onClick={() => handleStatusChange(order._id, 'Shipped')}
+                          color='primary'
+                          onClick={() =>
+                            handleStatusChange(order._id, 'Shipped')
+                          }
                         >
                           <LocalShippingIcon />
                         </IconButton>
                       </Tooltip>
                     )}
                     {order.status === 'Shipped' && (
-                      <Tooltip title="Mark as Delivered">
+                      <Tooltip title='Mark as Delivered'>
                         <IconButton
-                          color="success"
-                          onClick={() => handleStatusChange(order._id, 'Delivered')}
+                          color='success'
+                          onClick={() =>
+                            handleStatusChange(order._id, 'Delivered')
+                          }
                         >
                           <CheckCircleIcon />
                         </IconButton>
                       </Tooltip>
                     )}
-                    {['Pending', 'Paid', 'Processing'].includes(order.status) && (
-                      <Tooltip title="Cancel Order">
+                    {['Pending', 'Paid', 'Processing'].includes(
+                      order.status
+                    ) && (
+                      <Tooltip title='Cancel Order'>
                         <IconButton
-                          color="error"
-                          onClick={() => handleStatusChange(order._id, 'Cancelled')}
+                          color='error'
+                          onClick={() =>
+                            handleStatusChange(order._id, 'Cancelled')
+                          }
                         >
                           <CancelIcon />
                         </IconButton>
@@ -244,15 +274,71 @@ const OrdersManagement = () => {
           <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
           <Button
             onClick={handleAssignRider}
-            variant="contained"
+            variant='contained'
             disabled={!selectedRider}
           >
             Assign
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Box sx={{ mt: 4 }}>
+        <Typography variant='h6'>Add New Product</Typography>
+        <TextField
+          label='Product Title'
+          value={newProduct.title}
+          onChange={(e) =>
+            setNewProduct({ ...newProduct, title: e.target.value })
+          }
+          fullWidth
+          sx={{ mb: 2 }}
+        />
+        <TextField
+          label='Price'
+          type='number'
+          value={newProduct.price}
+          onChange={(e) =>
+            setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })
+          }
+          fullWidth
+          sx={{ mb: 2 }}
+        />
+        <Typography variant='subtitle1'>Add Variant</Typography>
+        <TextField
+          label='Color'
+          value={variant.color}
+          onChange={(e) => setVariant({ ...variant, color: e.target.value })}
+          sx={{ mb: 1 }}
+        />
+        <TextField
+          label='Size'
+          value={variant.size}
+          onChange={(e) => setVariant({ ...variant, size: e.target.value })}
+          sx={{ mb: 1 }}
+        />
+        <TextField
+          label='Stock'
+          type='number'
+          value={variant.stock}
+          onChange={(e) =>
+            setVariant({ ...variant, stock: parseInt(e.target.value, 10) })
+          }
+          sx={{ mb: 2 }}
+        />
+        <Button variant='outlined' onClick={handleAddVariant}>
+          Add Variant
+        </Button>
+        <Button
+          variant='contained'
+          color='primary'
+          onClick={handleAddProduct}
+          sx={{ mt: 2 }}
+        >
+          Save Product
+        </Button>
+      </Box>
     </Box>
   );
 };
 
-export default OrdersManagement; 
+export default OrdersManagement;

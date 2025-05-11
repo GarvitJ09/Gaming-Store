@@ -32,23 +32,29 @@ export default function AdminNavbar() {
             component={RouterLink}
             to="/admin"
           >
-            Dashboard
-          </Button>
+          Dashboard
+        </Button>
           <Button
             color="inherit"
             component={RouterLink}
             to="/admin/orders"
           >
-            Orders
-          </Button>
+          Orders
+        </Button>
           <Button
             color="inherit"
             component={RouterLink}
             to="/admin/riders"
           >
-            Riders
-          </Button>
-          <Button
+          Riders
+        </Button>
+        <Button 
+            color='inherit' 
+            component={RouterLink} 
+            to='/admin/products'>
+          Product Management
+        </Button>
+        <Button
             color="inherit"
             component={RouterLink}
             to="/admin/create-admin"
@@ -65,4 +71,4 @@ export default function AdminNavbar() {
       </Toolbar>
     </AppBar>
   );
-} 
+}

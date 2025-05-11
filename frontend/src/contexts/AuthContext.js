@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { auth, googleAuthProvider } from '../firebase';
-import { signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithPopup, onAuthStateChanged, signInWithEmailAndPassword,createUserWithEmailAndPassword  } from 'firebase/auth';
 import { userService } from '../services/userService';
 
 const AuthContext = createContext();
@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
       const result = await signInWithPopup(auth, googleAuthProvider);
       const token = await result.user.getIdToken();
       localStorage.setItem('token', token);
-      
+      await userService.googleLogin({idToken:token});
       // Get user details from backend
       const userDetails = await userService.getCurrentUser();
       setCurrentUser({ ...result.user, ...userDetails });
@@ -71,10 +71,35 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function signup(userData) {
+    try {
+      // Step 1: Firebase sign-up
+      const result = await createUserWithEmailAndPassword(auth, userData.email, userData.password);
+      const user = result.user;
+      console.log("user created in firebase",user);
+      // Step 2: Get token and store it
+      const token = await user.getIdToken();
+      localStorage.setItem('token', token);
+  
+      // Step 3: Register user in backend
+      const firebaseUid = user.uid; 
+      console.log("firebaseUid",firebaseUid);
+      await userService.registerUser({ firebaseUid ,...userData}); // Adjust this based on your API
+      console.log("user registered in backend");
+      // Step 4: Fetch user details
+      const userDetails = await userService.getCurrentUser();
+      setCurrentUser({ ...user, ...userDetails });
+  
+      return user;
+    } catch (error) {
+      console.error('Failed to sign up:', error);
+      throw error;
+    }
+  }
+
   async function logout() {
     try {
-      await auth.signOut();
-      await userService.logout();
+      await auth.signOut(); 
       setCurrentUser(null);
       localStorage.removeItem('token');
     } catch (error) {
@@ -88,6 +113,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     loginWithGoogle,
+    signup, 
     logout,
     isAdmin: currentUser?.role === 'admin'
   };

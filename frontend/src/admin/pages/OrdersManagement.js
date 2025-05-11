@@ -23,7 +23,6 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  TextField,
 } from '@mui/material';
 import { orderService } from '../../services/orderService';
 import { riderService } from '../../services/riderService';
@@ -281,62 +280,6 @@ const OrdersManagement = () => {
           </Button>
         </DialogActions>
       </Dialog>
-
-      <Box sx={{ mt: 4 }}>
-        <Typography variant='h6'>Add New Product</Typography>
-        <TextField
-          label='Product Title'
-          value={newProduct.title}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, title: e.target.value })
-          }
-          fullWidth
-          sx={{ mb: 2 }}
-        />
-        <TextField
-          label='Price'
-          type='number'
-          value={newProduct.price}
-          onChange={(e) =>
-            setNewProduct({ ...newProduct, price: parseFloat(e.target.value) })
-          }
-          fullWidth
-          sx={{ mb: 2 }}
-        />
-        <Typography variant='subtitle1'>Add Variant</Typography>
-        <TextField
-          label='Color'
-          value={variant.color}
-          onChange={(e) => setVariant({ ...variant, color: e.target.value })}
-          sx={{ mb: 1 }}
-        />
-        <TextField
-          label='Size'
-          value={variant.size}
-          onChange={(e) => setVariant({ ...variant, size: e.target.value })}
-          sx={{ mb: 1 }}
-        />
-        <TextField
-          label='Stock'
-          type='number'
-          value={variant.stock}
-          onChange={(e) =>
-            setVariant({ ...variant, stock: parseInt(e.target.value, 10) })
-          }
-          sx={{ mb: 2 }}
-        />
-        <Button variant='outlined' onClick={handleAddVariant}>
-          Add Variant
-        </Button>
-        <Button
-          variant='contained'
-          color='primary'
-          onClick={handleAddProduct}
-          sx={{ mt: 2 }}
-        >
-          Save Product
-        </Button>
-      </Box>
     </Box>
   );
 };

@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const VariantSchema = new mongoose.Schema({
-  color: { type: String, required: true }, // Variant color
-  size: { type: String, required: true }, // Variant size
+  color: { type: String }, // Variant color
+  size: { type: String }, // Variant size
   stock: { type: Number, required: true, min: 0 }, // Stock for the variant
   price: { type: Number, required: true, min: 0 }, // Price for the variant
-  sku: { type: String, unique: true }, // Unique identifier for the variant
+  sku: { type: String }, // Unique identifier for the variant
   image: { type: String }, // Image URL for the variant
 });
 

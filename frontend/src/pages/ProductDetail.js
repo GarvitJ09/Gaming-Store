@@ -20,16 +20,18 @@ import {
   MenuItem,
   InputLabel,
   Card,
-  CardMedia,
   IconButton,
   Breadcrumbs,
   Link,
+  CardMedia,
 } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import Slider from 'react-slick';
 import { productService } from '../services/productService';
 import { useCart } from '../contexts/CartContext';
+import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 
 export default function ProductDetail() {
   const { addToCart } = useCart();
@@ -52,7 +54,6 @@ export default function ProductDetail() {
       setLoading(true);
       const data = await productService.getProductById(id);
       setProduct(data);
-      // Set initial selected variant
       if (data.variants.length > 0) {
         setSelectedColor(data.variants[0].color);
         setSelectedSize(data.variants[0].size);
@@ -103,6 +104,15 @@ export default function ProductDetail() {
     }
   };
 
+  const carouselSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: true,
+  };
+
   if (loading) {
     return (
       <Box
@@ -134,6 +144,47 @@ export default function ProductDetail() {
     );
   }
 
+  const NextArrow = ({ onClick }) => (
+    <IconButton
+      onClick={onClick}
+      sx={{
+        position: 'absolute',
+        top: '50%',
+        right: 8,
+        transform: 'translateY(-50%)',
+        zIndex: 1,
+      }}
+      size='small'
+    >
+      <ArrowForwardIos fontSize='small' />
+    </IconButton>
+  );
+
+  const PrevArrow = ({ onClick }) => (
+    <IconButton
+      onClick={onClick}
+      sx={{
+        position: 'absolute',
+        top: '50%',
+        left: 8,
+        transform: 'translateY(-50%)',
+        zIndex: 1,
+      }}
+      size='small'
+    >
+      <ArrowBackIos fontSize='small' />
+    </IconButton>
+  );
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+  };
+
   return (
     <Container sx={{ py: 4 }}>
       <Breadcrumbs sx={{ mb: 3 }}>
@@ -161,19 +212,25 @@ export default function ProductDetail() {
       </Breadcrumbs>
 
       <Grid container spacing={4}>
-        {/* Product Images */}
+        {/* Image Carousel */}
         <Grid item xs={12} md={6}>
           <Card>
-            <CardMedia
-              component='img'
-              image={
-                selectedVariant?.image ||
-                product.variants[0]?.image ||
-                'https://via.placeholder.com/500'
-              }
-              alt={product.title}
-              sx={{ height: 500, objectFit: 'contain' }}
-            />
+            {product.variants.some((v) => v.image) && (
+              <Slider {...sliderSettings}>
+                {product.variants.map((variant, index) =>
+                  variant.image ? (
+                    <CardMedia
+                      key={index}
+                      component='img'
+                      height='200'
+                      image={variant.image}
+                      alt={`${product.title} - ${variant.color}`}
+                      sx={{ objectFit: 'contain', bgcolor: '#f5f5f5' }}
+                    />
+                  ) : null
+                )}
+              </Slider>
+            )}
           </Card>
         </Grid>
 

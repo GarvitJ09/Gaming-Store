@@ -11,8 +11,11 @@ import {
   FormControlLabel,
 } from '@mui/material';
 import { productService } from '../../services/productService';
+import { storage } from '../../firebase.js';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 const AdminProductManagement = () => {
+  const [image, setImage] = useState(null);
   const [product, setProduct] = useState({
     title: '',
     description: '',
@@ -30,7 +33,6 @@ const AdminProductManagement = () => {
     image: '',
   });
   const [products, setProducts] = useState([]);
-  const [selectedProductId, setSelectedProductId] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -45,12 +47,36 @@ const AdminProductManagement = () => {
     }
   };
 
-  const handleAddVariant = () => {
-    if (variant.color && variant.size && variant.stock && variant.price) {
-      setProduct({
-        ...product,
-        variants: [...product.variants, variant],
-      });
+  const handleAddVariant = async () => {
+    if (variant.stock && variant.price) {
+      let downloadURL = '';
+
+      if (image) {
+        const imageRef = ref(storage, `images/${image.name}`);
+        try {
+          await uploadBytes(imageRef, image);
+          downloadURL = await getDownloadURL(imageRef);
+          console.log('Image uploaded successfully! URL:', downloadURL);
+          alert('Image uploaded successfully!');
+        } catch (error) {
+          console.error('Error uploading image:', error);
+          alert('Image upload failed');
+          return;
+        }
+      }
+
+      // Construct the variant manually
+      const newVariant = {
+        ...variant,
+        image: downloadURL,
+      };
+
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        variants: [...prevProduct.variants, newVariant],
+      }));
+
+      // Clear fields
       setVariant({
         color: '',
         size: '',
@@ -59,27 +85,29 @@ const AdminProductManagement = () => {
         sku: '',
         image: '',
       });
+      setImage('');
     }
   };
 
   const handleAddProduct = async () => {
     try {
       const newProduct = { ...product };
+      console.log(newProduct);
       await productService.addProduct(newProduct);
       alert('Product added successfully!');
-      setProduct({
-        title: '',
-        description: '',
-        category: '',
-        brand: '',
-        isFeatured: false,
-        variants: [],
-      });
-      fetchProducts();
     } catch (error) {
       console.error('Error adding product:', error);
       alert('Failed to add product.');
     }
+    setProduct({
+      title: '',
+      description: '',
+      category: '',
+      brand: '',
+      isFeatured: false,
+      variants: [],
+    });
+    fetchProducts();
   };
 
   const handleUpdateStock = async (productId, variantId, additionalStock) => {
@@ -94,6 +122,12 @@ const AdminProductManagement = () => {
     } catch (error) {
       console.error('Error updating stock:', error);
       alert('Failed to update stock.');
+    }
+  };
+
+  const handleImageChange = (event) => {
+    if (event.target.files[0]) {
+      setImage(event.target.files[0]);
     }
   };
 
@@ -206,12 +240,11 @@ const AdminProductManagement = () => {
           </Grid>
           <Grid item xs={3}>
             <TextField
-              label='Image URL'
-              fullWidth
-              value={variant.image}
-              onChange={(e) =>
-                setVariant({ ...variant, image: e.target.value })
-              }
+              input
+              type='file'
+              multiple
+              accept='image/*'
+              onChange={handleImageChange}
             />
           </Grid>
         </Grid>
